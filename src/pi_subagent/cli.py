@@ -55,14 +55,17 @@ def run(args: argparse.Namespace) -> int:
         "--no-session",
         "--model",
         args.model,
-        args.instruction,
     ]
+    if args.thinking:
+        command.extend(["--thinking", args.thinking])
+    command.append(args.instruction)
     metadata_path.write_text(
         json.dumps(
             {
                 "id": run_id,
                 "model": args.model,
                 "instruction": args.instruction,
+                "thinking": args.thinking,
                 "cwd": args.cwd or os.getcwd(),
                 "command": command,
                 "started_at": datetime.now(timezone.utc).isoformat(),
@@ -138,7 +141,12 @@ def main() -> int:
     launch.add_argument("--model", required=True, help="Pi model selector, e.g. openai-codex/gpt-5.6-terra")
     launch.add_argument("--instruction", required=True, help="complete task instruction for the subagent")
     launch.add_argument("--cwd", help="working directory for the subagent")
-    launch.add_argument("--confirm-model", action="store_true", help="record that the model was explicitly confirmed")
+    launch.add_argument(
+        "--thinking",
+        choices=("off", "minimal", "low", "medium", "high", "xhigh", "max"),
+        help="Pi thinking level; omitted uses Pi's configured default",
+    )
+    launch.add_argument("--confirm-model", action="store_true", help="record that the model and thinking setting were explicitly confirmed")
     launch.set_defaults(handler=run)
 
     available_models = subcommands.add_parser("models", help="list Pi models available to this host")

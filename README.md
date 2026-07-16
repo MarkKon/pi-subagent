@@ -38,18 +38,22 @@ For the GitHub installation, use `uv tool upgrade pi-subagent`.
 
 ## Launch a subagent
 
-Before launching, explicitly confirm the exact model selector with the user.
-The command requires `--confirm-model` as an auditable acknowledgement of that
-confirmation.
+Before launching, explicitly confirm the exact model selector **and thinking
+level** with the user. The command requires `--confirm-model` as an auditable
+acknowledgement of that confirmation. Omitting `--thinking` uses Pi's configured
+default, which should also be stated when requesting confirmation.
 
 ```bash
 pi-subagent run \
   --model openai-codex/gpt-5.6-terra \
+  --thinking high \
   --confirm-model \
   --instruction 'Inspect the authentication flow. Do not edit files. Report relevant files, current behavior, and the recommended test seam.'
 ```
 
-Use `--cwd /path/to/worktree` to choose the child process's working directory.
+Supported thinking levels are `off`, `minimal`, `low`, `medium`, `high`,
+`xhigh`, and `max`; Pi clamps unsupported levels for a model. Use
+`--cwd /path/to/worktree` to choose the child process's working directory.
 Avoid parallel implementation workers in the same directory.
 
 ## Inspect a run

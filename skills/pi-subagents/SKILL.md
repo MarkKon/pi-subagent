@@ -12,15 +12,17 @@ JSON event stream locally for later inspection.
 ## Model-confirmation gate
 
 Never launch a subagent until the user explicitly confirms the exact model
-selector, for example `openai-codex/gpt-5.6-terra`. Ask once per distinct model
-in the current conversation:
+selector and thinking level, for example `openai-codex/gpt-5.6-terra` at
+`high`. Ask once per distinct model-and-thinking combination in the current
+conversation:
 
-> May I launch Pi subagents using `<provider/model>`?
+> May I launch Pi subagents using `<provider/model>` with `<thinking>` thinking?
 
-After the user confirms that exact model, it is approved for further launches
-in this conversation. A different model requires a new confirmation. Pass
-`--confirm-model` only after that confirmation; the command refuses to launch
-without it.
+After the user confirms that exact combination, it is approved for further
+launches in this conversation. A different model or thinking level requires a
+new confirmation. If `--thinking` is omitted, say that Pi's configured default
+will be used and obtain confirmation for that. Pass `--confirm-model` only
+after confirmation; the command refuses to launch without it.
 
 ## Launch
 
@@ -29,6 +31,7 @@ Give each worker one bounded instruction with scope and validation expectations:
 ```bash
 pi-subagent run \
   --model openai-codex/gpt-5.6-terra \
+  --thinking high \
   --confirm-model \
   --instruction 'Inspect the authentication flow. Do not edit files. Report relevant files, current behavior, and the recommended test seam.'
 ```
