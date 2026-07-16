@@ -1,13 +1,14 @@
 ---
 name: pi-subagents
-description: Launch isolated Pi subagents through the global pi-subagent command, selecting a provider/model and instruction. Use when the user explicitly asks to delegate work to Pi or to run independent Pi workers.
+description: Launch Docker-isolated Pi subagents in dedicated Git worktrees through the global pi-subagent command. Use when the user explicitly asks to delegate work to Pi or to run independent Pi workers.
 ---
 
 # Pi Subagents
 
-Use the global `pi-subagent` command to launch an isolated Pi process. It
-returns only the worker's final assistant message on stdout and stores the full
-JSON event stream locally for later inspection.
+Use the global `pi-subagent` command to launch an isolated Pi process. Every
+run creates its own Git branch and worktree, then runs Pi in Docker with only
+that worktree mounted at `/workspace`. Stdout contains only the worker's final
+assistant message; full JSON events and stderr remain locally inspectable.
 
 ## Model-confirmation gate
 
@@ -36,20 +37,27 @@ pi-subagent run \
   --instruction 'Inspect the authentication flow. Do not edit files. Report relevant files, current behavior, and the recommended test seam.'
 ```
 
-Use `--cwd /path/to/worktree` when the worker must operate in another
-worktree. Do not run parallel implementation workers in the same directory.
-The parent agent is still responsible for inspecting diffs and verifying
-claimed checks.
+The current directory must be in a Git repository. Use `--cwd` to select a
+different repository and `--base` to choose a base ref. Do not expect edits in
+the parent worktree: inspect the reported subagent worktree and intentionally
+merge or cherry-pick approved changes.
 
-## Inspect a run
+The container receives a read-only run-local copy of Pi credentials/config so
+it can authenticate. It has no host-home, sibling-repository, or Docker-socket
+mount, but network access is enabled.
 
-The launch command prints a run ID and log paths to stderr. To inspect retained
-output, use:
+## Inspect and clean up
+
+The launch command prints a run ID, branch, worktree, and log paths to stderr.
+Use:
 
 ```bash
+git -C ~/.local/state/pi-subagents/<run-id>/worktree diff
 pi-subagent inspect <run-id> --tail 100
 pi-subagent inspect <run-id> --stderr --tail 100
+pi-subagent cleanup <run-id>
 ```
 
-The event log can contain tool output and repository data. Read only the
-needed portion and do not expose secrets.
+Cleanup removes the worktree and branch but retains logs. Event logs can contain
+tool output and repository data; read only the needed portion and do not expose
+secrets.
