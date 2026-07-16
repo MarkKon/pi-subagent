@@ -108,6 +108,13 @@ def run(args: argparse.Namespace) -> int:
     return exit_code
 
 
+def models(args: argparse.Namespace) -> int:
+    command = ["pi", "--list-models"]
+    if args.query:
+        command.append(args.query)
+    return subprocess.run(command, check=False).returncode
+
+
 def inspect(args: argparse.Namespace) -> int:
     candidate = Path(args.run)
     run_dir = candidate if candidate.is_absolute() else STATE_DIR / candidate
@@ -133,6 +140,10 @@ def main() -> int:
     launch.add_argument("--cwd", help="working directory for the subagent")
     launch.add_argument("--confirm-model", action="store_true", help="record that the model was explicitly confirmed")
     launch.set_defaults(handler=run)
+
+    available_models = subcommands.add_parser("models", help="list Pi models available to this host")
+    available_models.add_argument("query", nargs="?", help="optional model search string")
+    available_models.set_defaults(handler=models)
 
     review = subcommands.add_parser("inspect", help="print a retained event or stderr log")
     review.add_argument("run", help="run ID printed at launch, or an absolute run directory")
